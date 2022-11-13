@@ -1,72 +1,62 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import styled from "styled-components";
 import IconButton from "@material-ui/core/IconButton";
 import PinterestIcon from "@material-ui/icons/Pinterest";
 import SearchIcon from "@material-ui/icons/Search";
-import NotificationsIcon from "@material-ui/icons/Notifications";
-import FaceIcon from "@material-ui/icons/Face";
-import TextsmsIcon from "@material-ui/icons/Textsms";
-import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import {ButtonStyled} from '../styledCss/ButtonStyled'
+import AddIcon from "@material-ui/icons/Add";
+import {PALLET} from "../styledCss/Theme";
 
-function Header(props) {
-  const [input, setInput] = useState("");
+function Header({onSubmit, toggleAddImageModal, ...props}) {
+    const [input, setInput] = useState("");
 
-  const onSearchSubmit = (e) => {
-    e.preventDefault();
-    props.onSubmit(input);
-  };
+    const onSearchSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(input);
+    };
 
-  return (
-    <Wrapper>
-      <LogoWrapper>
-        <IconButton>
-          <PinterestIcon />
-        </IconButton>
-      </LogoWrapper>
-      <HomePageButton>
-        <a href="/">Homepage</a>
-      </HomePageButton>
-      <FollowingButton>
-        <a href="/">Following</a>
-      </FollowingButton>
-      <SearchWrapper>
-        <SearchBarWrapper>
-          <IconButton>
-            <SearchIcon />
-          </IconButton>
-          <form>
-            <input type="text" onChange={(e) => setInput(e.target.value)} />
-            <button type="submit" onClick={onSearchSubmit}>
-              {/*CAN BE LEFT EMPTY*/}
-            </button>
-          </form>
-        </SearchBarWrapper>
-      </SearchWrapper>
-      <IconsWrapper>
-        <IconButton>
-          <NotificationsIcon />
-        </IconButton>
-        <IconButton>
-          <TextsmsIcon />
-        </IconButton>
-        <IconButton>
-          <FaceIcon />
-        </IconButton>
-        <IconButton>
-          <KeyboardArrowDownIcon />
-        </IconButton>
-      </IconsWrapper>
-    </Wrapper>
-  );
+    return (
+        <Wrapper>
+
+            <LogoWrapper>
+                <IconButton>
+                    <PinterestIcon/>
+                </IconButton>
+            </LogoWrapper>
+
+            <SearchWrapper>
+                <SearchBarWrapper>
+                    <IconButton>
+                        <SearchIcon/>
+                    </IconButton>
+                    <form>
+                        <input type="text" onChange={(e) => setInput(e.target.value)}/>
+                        <button type="submit" onClick={onSearchSubmit}>
+                            {/*CAN BE LEFT EMPTY*/}
+                        </button>
+                    </form>
+                </SearchBarWrapper>
+            </SearchWrapper>
+            <IconButton style={{backgroundColor: PALLET.RED, color: PALLET.WHITE}}
+                        onClick={() => toggleAddImageModal(true)}>
+                <AddIcon/>
+            </IconButton>
+        </Wrapper>
+    );
 }
+
 export default Header;
 
 const Wrapper = styled.div`
+  position: sticky;
+  z-index: 678;
+  //width: 100%;
+  top: 0px;
   display: flex;
   align-items: center;
+  justify-content: space-around;
+  gap: 24px;
   height: 56px;
-  padding: 12px 4px 4px 16px;
+  padding: 12px 4px 4px 4px;
   background-color: white;
   color: black;
 `;
@@ -76,28 +66,6 @@ const LogoWrapper = styled.div`
     color: #e60023;
     font-size: 32px;
     cursor: pointer;
-  }
-`;
-
-const HomePageButton = styled(ButtonStyled)`
-  a {
-    text-decoration: none;
-    color: white;
-    font-weight: 700;
-  }
-`;
-
-const FollowingButton = styled(ButtonStyled)`
- 
-  background-color: white;
-  a {
-    text-decoration: none;
-    color: black;
-    font-weight: 700;
-  }
-
-  :hover {
-    background-color: #e1e1e1;
   }
 `;
 
@@ -144,4 +112,3 @@ const SearchBarWrapper = styled.div`
   }
 `;
 
-const IconsWrapper = styled.div``;

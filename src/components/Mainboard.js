@@ -8,9 +8,9 @@ function Mainboard(props) {
   return (
     <div className="mainboard">
       <div className="mainboard__container">
-        {pins.map((pin) => {
+        {pins.map((pin , index) => {
           let { urls } = pin;
-          return <Pin urls={urls} />;
+          return <Pin urls={urls} {...pin} key={index} />;
         })}
       </div>
     </div>
