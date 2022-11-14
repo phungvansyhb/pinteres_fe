@@ -1,14 +1,12 @@
 import React, {useState} from "react";
 import styled from "styled-components";
 import IconButton from "@material-ui/core/IconButton";
-import PinterestIcon from "@material-ui/icons/Pinterest";
 import SearchIcon from "@material-ui/icons/Search";
 import AddIcon from "@material-ui/icons/Add";
 import {PALLET} from "../styledCss/Theme";
 
-function Header({onSubmit, toggleAddImageModal, ...props}) {
+function Header({onSubmit, ...props}) {
     const [input, setInput] = useState("");
-
     const onSearchSubmit = (e) => {
         e.preventDefault();
         onSubmit(input);
@@ -18,9 +16,9 @@ function Header({onSubmit, toggleAddImageModal, ...props}) {
         <Wrapper>
 
             <LogoWrapper>
-                <IconButton>
-                    <PinterestIcon/>
-                </IconButton>
+                <a href={'/'}>
+                    <img src='./logo-11.png' width={48} height={48} />
+                </a>
             </LogoWrapper>
 
             <SearchWrapper>
@@ -37,7 +35,7 @@ function Header({onSubmit, toggleAddImageModal, ...props}) {
                 </SearchBarWrapper>
             </SearchWrapper>
             <IconButton style={{backgroundColor: PALLET.RED, color: PALLET.WHITE}}
-                        onClick={() => toggleAddImageModal(true)}>
+                        href={'/create'}>
                 <AddIcon/>
             </IconButton>
         </Wrapper>
@@ -56,15 +54,13 @@ const Wrapper = styled.div`
   justify-content: space-around;
   gap: 24px;
   height: 56px;
-  padding: 12px 4px 4px 4px;
+  padding: 12px 8px 4px 8px;
   background-color: white;
   color: black;
 `;
 
 const LogoWrapper = styled.div`
   .MuiSvgIcon-root {
-    color: #e60023;
-    font-size: 32px;
     cursor: pointer;
   }
 `;
