@@ -17,7 +17,7 @@ function CategoryItem({category, activeKey, toggleCategory, ...props}) {
     );
 }
 
-const CategoryItemStyled = styled(IconButtonStyled)`
+export const CategoryItemStyled = styled(IconButtonStyled)`
   @media (max-width: 768px){
     border-radius: 8px;
     padding: 8px;

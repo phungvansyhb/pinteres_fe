@@ -13,7 +13,9 @@ export const ButtonStyled = styled.div`
   color : ${props => props.color || "#000"}
 `;
 
-export const IconButtonStyled = styled.div`
+export const IconButtonStyled = styled.button`
+  outline: none;
+  border: none;
   display: flex;
   padding: ${props => props.padding ||'16px'};
   align-items: center;

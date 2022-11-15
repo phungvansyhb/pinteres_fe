@@ -5,7 +5,9 @@ import App from "./components/App";
 import reportWebVitals from "./reportWebVitals";
 import {
     QueryClient,
-    QueryClientProvider } from 'react-query'
+    QueryClientProvider
+} from 'react-query'
+import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 
 
 const queryClient = new QueryClient()
@@ -13,7 +15,11 @@ const queryClient = new QueryClient()
 ReactDOM.render(
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
-            <App/>
+            <Router>
+                <Routes>
+                    <Route path='*' element={<App/>}></Route>
+                </Routes>
+            </Router>
 
         </QueryClientProvider>
 

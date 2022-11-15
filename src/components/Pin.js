@@ -10,23 +10,20 @@ import FileSaver from 'file-saver'
 import {CloudDownload} from "@material-ui/icons";
 import {useNavigate} from "react-router-dom";
 
-
-function Pin(props) {
-    let {urls, imageName, alt_description, created_at, updated_at, id} = props;
+function Pin({srcImage, title, description, createdAt, updatedAt, _id, amountComment, ...props}) {
     const navigate = useNavigate()
     const handleDownload = useCallback((e) => {
         e.stopPropagation();
-        if (urls.regular) {
-            /* TODO : need change name image to unique */
-            FileSaver.saveAs(urls?.regular, "image")
+        if (srcImage) {
+            FileSaver.saveAs(srcImage, title || 'image' + Date.now().toString())
         }
-    }, [props.urls])
+    }, [srcImage])
     /* TODO : call api load comment */
     return (
         <>
             <div className="pin">
-                <div className="pin__container" onClick={() => navigate(`/pin/${id}`)}>
-                    <img src={urls?.regular} alt="pin"/>
+                <div className="pin__container" onClick={() => navigate(`/image/${_id}`)}>
+                    <img src={srcImage} alt="pin"/>
                     <div className='pin__itemOverlay'>
                         <IconButtonStyled padding={'8px'} bgColor={PALLET.RED} color={PALLET.WHITE}
                                           onClick={handleDownload}>
@@ -34,7 +31,7 @@ function Pin(props) {
                         </IconButtonStyled>
 
                         <div style={{color: PALLET.WHITE, fontWeight: 700, display: 'flex', alignItems: 'center'}}>
-                            4 <Forum/>
+                            {amountComment} <Forum/>
                         </div>
                     </div>
                 </div>

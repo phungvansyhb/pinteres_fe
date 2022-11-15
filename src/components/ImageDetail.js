@@ -12,6 +12,9 @@ import {useParams} from "react-router-dom";
 import {useQuery} from "react-query";
 import styled from "styled-components";
 import Box from "@material-ui/core/Box";
+import Image from "../api/Image";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Mainboard from "./Mainboard";
 
 const defaultImage = {
     title: "abcasmnd",
@@ -24,11 +27,13 @@ const defaultImage = {
 
 function ImageDetail({...props}) {
     const {id} = useParams()
-    const {data, isFetching} = useQuery(['getImageDetail', id], () => {
-            return defaultImage
+    const {data: {detail, references}, isFetching} = useQuery(['getImageDetail', id], async () => {
+            const result = await Image.getDetail(id)
+            const [detail, ...references] = result.data.images
+            return {detail, references}
         },
         {
-            initialData: defaultImage,
+            initialData: {},
             enabled: !!id
         }
     )
@@ -46,97 +51,109 @@ function ImageDetail({...props}) {
             time: '11/11/2022'
         },
     ])
+
+
     const handleDownload = useCallback((e) => {
         e.stopPropagation();
-        if (data.srcImage) {
+        if (detail.srcImage) {
             /* TODO : need change name image to unique */
-            FileSaver.saveAs(data.srcImage, "image")
+            FileSaver.saveAs(detail.srcImage, "image")
         }
-    }, [data.srcImage])
+    }, [])
+
+    if (isFetching) return <CircularProgress className='selfCenter'/>
+    if (!detail) return <h1> ID invalid </h1>
     return (
-        <BoxStyled>
-            <Grid container spacing={2} className='imageWrap'>
-                <Grid item xs={12} md={6} style={{padding: '20px'}}>
-                    <img src={data?.srcImage} alt="pin"/>
-                </Grid>
-                <Grid item xs={12} md={6} style={{padding: '20px'}}>
-                    {
-                        !isEdit ?
-                            <>
-                                {/*====================Action==================================*/}
-                                <FlexStyled justifyContent='space-between' alignItems='center'>
-                                    <FlexStyled gap={'4px'}>
-                                        <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE}
-                                                          onClick={handleDownload}>Download</IconButtonStyled>
+        <>
+            <BoxStyled>
+                <Grid container spacing={2} className='imageWrap'>
+                    <Grid item xs={12} md={6} style={{padding: '20px'}}>
+                        <img src={detail?.srcImage} alt="pin"/>
+                    </Grid>
+                    <Grid item xs={12} md={6} style={{padding: '20px'}}>
+                        {
+                            !isEdit ?
+                                <>
+                                    {/*====================Action==================================*/}
+                                    <FlexStyled justifyContent='space-between' alignItems='center'>
+                                        <FlexStyled gap={'4px'}>
+                                            <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE}
+                                                              onClick={handleDownload}>Download</IconButtonStyled>
+                                            <IconButtonStyled bgColor={PALLET.GRAY}
+                                                              onClick={() => toggleEdit(true)}>Edit</IconButtonStyled>
+                                        </FlexStyled>
+
+
+                                        <TextStyled fontSize={'12px'} fontWeight={400}
+                                                    color='gray'>{new Date(detail?.updatedAt).toLocaleString()}</TextStyled>
+                                    </FlexStyled>
+                                    <br/>
+                                    {/*===================Description===============================*/}
+                                    {
+                                        detail.title ? <TextStyled fontSize={'36px'}
+                                                                   fontWeight={700}>{detail.title}</TextStyled>
+                                            : <TextStyled fontSize={'36px'}
+                                                          fontWeight={700}
+                                                          color={PALLET.GRAY}>{'Not have name yet'}</TextStyled>
+
+                                    }
+                                    <br/>
+                                    {
+                                        detail.description ? <TextStyled fontSize={'16px'}
+                                                                         fontWeight={400}>{detail.description}</TextStyled>
+                                            : <TextStyled fontSize={'16px'}
+                                                          fontWeight={400}
+                                                          color={PALLET.GRAY}>Not have description yet</TextStyled>
+                                    }
+
+
+                                    {/*==================Comment============================*/}
+                                    <br/>
+                                    <br/>
+                                    <FlexStyled gap={'8px'} alignItems={'center'}>
+                                        <TextStyled fontWeight={600}
+                                                    fontSize={'20px'}>{detail.amountComment} Comments</TextStyled>
+                                        <BtnArrowIconStyled bgColor={'#fff'}
+                                                            onClick={() => toggleShowComment(!showCommentList)}>
+                                            <ArrowDownward
+                                                style={{
+                                                    transition: 'all 0.3s ease',
+                                                    transform: showCommentList ? "rotate(0deg)" : "rotate(-90deg)"
+                                                }}/>
+                                        </BtnArrowIconStyled>
+                                    </FlexStyled>
+
+                                    <br/>
+                                    <br/>
+                                    {showCommentList &&
+                                        <FlexStyled flexDirection={'column'} gap={'24px'}>
+                                            {commentLists.map((comment, index) => <Comment comment={comment}
+                                                                                           key={index}/>)}
+                                        </FlexStyled>
+                                    }
+                                    <br/>
+                                    <br/>
+                                    <AddComment/>
+                                </>
+                                : <>
+                                    Editing
+                                    <FlexStyled gap={'4px'} justifyContent={'center'}>
+                                        <IconButtonStyled bgColor={PALLET.RED}
+                                                          color={PALLET.WHITE}>Save</IconButtonStyled>
                                         <IconButtonStyled bgColor={PALLET.GRAY}
-                                                          onClick={() => toggleEdit(true)}>Edit</IconButtonStyled>
+                                                          onClick={() => toggleEdit(false)}>Cancel</IconButtonStyled>
                                     </FlexStyled>
-
-
-                                    <TextStyled fontSize={'12px'} fontWeight={400}
-                                                color='gray'>{new Date(data?.updated_at).toLocaleString()}</TextStyled>
-                                </FlexStyled>
-                                <br/>
-                                {/*===================Description===============================*/}
-                                {
-                                    data.title ? <TextStyled fontSize={'36px'}
-                                                             fontWeight={700}>{data.title}</TextStyled>
-                                        : <TextStyled fontSize={'36px'}
-                                                      fontWeight={700}
-                                                      color={PALLET.GRAY}>{'Not have name yet'}</TextStyled>
-
-                                }
-                                <br/>
-                                {
-                                    data.description ? <TextStyled fontSize={'16px'}
-                                                                   fontWeight={400}>{data.description}</TextStyled>
-                                        : <TextStyled fontSize={'16px'}
-                                                      fontWeight={400}
-                                                      color={PALLET.GRAY}>Not have description yet</TextStyled>
-                                }
-
-
-                                {/*==================Comment============================*/}
-                                <br/>
-                                <br/>
-                                <FlexStyled gap={'8px'} alignItems={'center'}>
-                                    <TextStyled fontWeight={600}
-                                                fontSize={'20px'}>{commentLists.length} Comments</TextStyled>
-                                    <BtnArrowIconStyled bgColor={'#fff'}
-                                                        onClick={() => toggleShowComment(!showCommentList)}>
-                                        <ArrowDownward
-                                            style={{
-                                                transition: 'all 0.3s ease',
-                                                transform: showCommentList ? "rotate(0deg)" : "rotate(-90deg)"
-                                            }}/>
-                                    </BtnArrowIconStyled>
-                                </FlexStyled>
-
-                                <br/>
-                                <br/>
-                                {showCommentList &&
-                                    <FlexStyled flexDirection={'column'} gap={'24px'}>
-                                        {commentLists.map((comment, index) => <Comment comment={comment}
-                                                                                       key={index}/>)}
-                                    </FlexStyled>
-                                }
-                                <br/>
-                                <br/>
-                                <AddComment/>
-                            </>
-                            : <>
-                                Editing
-                                <FlexStyled gap={'4px'} justifyContent={'center'}>
-                                    <IconButtonStyled bgColor={PALLET.RED}
-                                                      color={PALLET.WHITE}>Save</IconButtonStyled>
-                                    <IconButtonStyled bgColor={PALLET.GRAY}
-                                                      onClick={() => toggleEdit(false)}>Cancel</IconButtonStyled>
-                                </FlexStyled>
-                            </>
-                    }
+                                </>
+                        }
+                    </Grid>
                 </Grid>
-            </Grid>
-        </BoxStyled>
+            </BoxStyled>
+            <br/>
+            <br/>
+            <TextStyled fontWeight={700} fontSize={'24px'} className={'ml-4'}>More like this</TextStyled>
+            <Mainboard pins={references}/>
+        </>
+
     );
 }
 
@@ -148,18 +165,21 @@ const BoxStyled = styled(Box)`
   background-color: #fff;
   padding-top: 20px;
   padding-bottom: 30px;
-  .imageWrap{
-    box-shadow:rgb(0 0 0 / 10%) 0px 1px 20px 0px ;
+
+  .imageWrap {
+    box-shadow: rgb(0 0 0 / 10%) 0px 1px 20px 0px;
     border-radius: 20px;
     width: 65vw;
     height: max-content;
   }
-  @media (max-width: 768px){
+
+  @media (max-width: 768px) {
     padding-top: 10px;
-    .imageWrap{
+    .imageWrap {
       width: 90vw;
     }
   }
+
   img {
     display: block;
     width: 100%;

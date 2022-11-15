@@ -11,42 +11,66 @@ import ImageUploading from "react-images-uploading";
 import {Close, CloudUploadOutlined} from "@material-ui/icons";
 import {TextStyled} from "../styledCss/TextStyled";
 import IconButton from "@material-ui/core/IconButton";
+import Snackbar from "@material-ui/core/Snackbar";
+import Image from "../api/Image";
+import {useMutation} from "react-query";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 function AddImageModal({...props}) {
-    const titleRef = useRef();
-    const descriptionRef = useRef();
-    const categoryRef = useRef();
+    // const titleRef = useRef();
+    // const descriptionRef = useRef();
+    // const categoryRef = useRef();
     const [image, setImage] = useState()
+    const [isShowMsg, showMsg] = useState();
+    const [msg, setMsg] = useState();
     const onChange = (imageList, addUpdateIndex) => {
-        // data for submit
-        console.log(imageList, addUpdateIndex);
         setImage(imageList);
     };
+    const uploadImageMutation = useMutation(['uploadImage', image], (data) => Image.uploadToCloudinary(data), {})
 
     function handleUploadImage() {
-        if (!titleRef) {
-
-        }
-        if (!descriptionRef) {
-
+        if (!image) {
+            showMsg(true)
+            setMsg(' Vui lòng chọn ảnh ' )
         } else {
-            /* TODO : upload image*/
+            const formData = new FormData;
+            formData.append('file',image)
+            uploadImageMutation.mutate(formData , {
+                onSuccess : ()=>{
+                    showMsg(true)
+                    setMsg('Tải ảnh lên thành công ' )
+                },
+                onError : ()=>{
+                    showMsg(true)
+                    setMsg('Tải ảnh lên thất bại ' )
+                }
+            })
+
         }
     }
 
     return (
         <BoxExtendStyled>
+            <Snackbar
+                anchorOrigin={{vertical: 'top', horizontal: 'center'}}
+                open={isShowMsg}
+                autoHideDuration={3000}
+                onClose={() => showMsg(false)}
+                message={msg}
+
+            />
+
             <Grid container spacing={2} className='formCreate'>
-                <Grid item xs={12} md={6} style={{padding: '20px'}}>
+                <Grid item xs={12} style={{padding: '20px'}}>
                     <FlexStyled alignItems={'center'} justifyContent={'center'}
-                                flexDirection={'column'} style={{height: '100%'}}>
+                                flexDirection={'column'} style={{minHeight: '400px'}}>
                         <ImageUploading
                             multiple
                             value={image}
                             onChange={onChange}
                             maxNumber={1}
                             dataURLKey="data_url"
-                            acceptType={["jpg"]}
+                            // acceptType={["jpg , png , jpeg , svg , webp"]}
                         >
                             {({
                                   imageList,
@@ -83,8 +107,15 @@ function AddImageModal({...props}) {
 
                         </ImageUploading>
                     </FlexStyled>
+                    <FlexStyled gap={'4px'} justifyContent={'center'}>
+                        <IconButtonStyled bgColor={PALLET.RED}
+                                          color={PALLET.WHITE}
+                                          onClick={handleUploadImage}>{uploadImageMutation.isLoading ?
+                            <CircularProgress /> : 'Save'} </IconButtonStyled>
+                        <IconButtonStyled bgColor={PALLET.GRAY}>Cancel</IconButtonStyled>
+                    </FlexStyled>
                 </Grid>
-                <Grid item xs={12} md={6} style={{padding: '32px'}}>
+                {/* <Grid item xs={12} md={6} style={{padding: '32px'}}>
                     <FormAddImage flexDirection='column'>
                         <FlexStyled alignItems='center'>
                             <label htmlFor='imageTitle'>Image title</label>
@@ -109,7 +140,7 @@ function AddImageModal({...props}) {
                         <IconButtonStyled bgColor={PALLET.GRAY}>Cancel</IconButtonStyled>
                     </FlexStyled>
 
-                </Grid>
+                </Grid> */}
             </Grid>
         </BoxExtendStyled>
     );
@@ -130,6 +161,7 @@ const BoxExtendStyled = styled.div`
   padding-bottom: 30px;
   display: flex;
   justify-content: center;
+
   .imageUploadContainer {
     position: relative;
 
@@ -145,15 +177,17 @@ const BoxExtendStyled = styled.div`
     right: 5px;
     top: 5px;
   }
-  .formCreate{
+
+  .formCreate {
     background-color: #fff;
     border-radius: 20px;
     width: 65vw;
     height: max-content;
   }
-  @media (max-width: 768px){
+
+  @media (max-width: 768px) {
     padding-top: 20px;
-    .formCreate{
+    .formCreate {
       width: 90vw;
     }
   }
