@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useQuery} from "react-query";
 import Image from "../api/Image";
 import Mainboard from "./Mainboard";
@@ -7,6 +7,13 @@ import styled from "styled-components";
 import CategoryItem, {CategoryItemStyled} from "./CategoryItem";
 import {FlexExtend} from "./Home";
 import {PALLET} from "../styledCss/Theme";
+import {ModalStyled} from "./Pin";
+import Modal from "@material-ui/core/Modal";
+import {FormWrapper} from "./AddComment";
+import {FlexStyled} from "../styledCss/FlexStyled";
+import {IconButtonStyled} from "../styledCss/ButtonStyled";
+import Fade from "@material-ui/core/Fade";
+import Box from "@material-ui/core/Box";
 
 
 const K16Category = [
@@ -58,7 +65,13 @@ const TYPE_FILTER = {
     MEMBER: 'MEMBER',
 }
 
+
 function K16({...props}) {
+    const key = process.env.REACT_APP_KEY_K16
+
+    const [validateKey, setValidateKey] = useState(()=>{
+        return window.localStorage.getItem('k16Key') === key
+    });
     const [nameMember, setNameMember] = useState();
     const [activeCategory, setActiveCategory] = useState();
     const {
@@ -68,9 +81,9 @@ function K16({...props}) {
         if (!activeCategory && !nameMember) {
             return Image.getK16Only()
         }
-        if(activeCategory){
+        if (activeCategory) {
             return Image.searchByCategory(activeCategory)
-        }else{
+        } else {
             return Image.searchByName(nameMember)
         }
     }, {initialData: []})
@@ -89,7 +102,40 @@ function K16({...props}) {
         }
 
     }, [])
+    const keyRef = useRef();
+    const errorRef = useRef();
 
+    function checkKey() {
+        console.log(keyRef.current.value , key)
+        if (keyRef.current.value === key) {
+            window.localStorage.setItem('k16Key',key)
+            setValidateKey(true)
+        }
+        else{
+            errorRef.current.innerText='Key không chính xác'
+        }
+    }
+
+    if (!validateKey) return (
+        <ModalStyled open={true} >
+            <Fade in={true}>
+                <BoxStyled>
+                    <FormWrapper>
+                        <FlexStyled alignItems='center'>
+                            <label htmlFor='keyK16'>Key</label>
+                            <input type="text" name="keyK16" ref={keyRef}/>
+                        </FlexStyled>
+                        <p ref={errorRef} style={{color:"red" , fontWeight:600 , textAlign:'center'}}></p>
+
+                        <FlexStyled justifyContent='center'>
+                            <IconButtonStyled bgColor={PALLET.BLACK} color={PALLET.WHITE} type='submit'
+                                              onClick={() => checkKey()}>Check</IconButtonStyled>
+                        </FlexStyled>
+                    </FormWrapper>
+                </BoxStyled>
+            </Fade>
+        </ModalStyled>
+    )
     return (
         <K16Wrapper>
             <FlexExtend gap={'24px'} justifyContent={'center'}>
@@ -122,32 +168,37 @@ const K16Wrapper = styled.div`
   .memberBtn {
     position: relative;
   }
-  
+
   .memberList {
     display: none;
     position: relative;
     z-index: 10;
     top: 20px;
     left: 50%;
-    transform: translate(-50%,0);
+    transform: translate(-50%, 0);
     column-count: 5;
     gap: 12px;
   }
-  .memberBtn:hover , :active{
-    .memberList{
+
+  .memberBtn:hover, :active {
+    .memberList {
       display: block;
     }
   }
+  
+`
+export const BoxStyled = styled(Box)`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  border-radius: 12px;
+  min-width: 300px;
+  height: max-content;
+  outline: 0;
+  overflow: hidden;
+`;
 
 
-`
-const WrapSearchBoxStyled = styled.div`
-  display: flex;
-  gap: 12px;
-  padding-left: 32px;
-  padding-right: 32px;
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`
 export default K16;

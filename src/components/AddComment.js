@@ -1,49 +1,74 @@
-import React, {useRef, useState} from 'react';
+import React, {useContext, useImperativeHandle, useRef, useState} from 'react';
 import {FlexStyled} from "../styledCss/FlexStyled";
 import styled from "styled-components";
 import {IconButtonStyled} from "../styledCss/ButtonStyled";
 import {PALLET} from "../styledCss/Theme";
+import {ImageContext} from "./ImageDetail";
 
-function AddComment(props) {
-    const [showForm, toggleShowForm] = useState(false)
+function AddComment({setShowFormReply, parentId, isReply, ...props}) {
+    const {imageId, createCommentFunc  } = useContext(ImageContext)
+    const [showForm, toggleShowForm] = useState(!!isReply)
     const nameRef = useRef()
     const contentRef = useRef()
-    function handleSubmit(){
-        const name = nameRef.current.value;
+
+    function handleSubmit() {
+        const userName = nameRef.current.value;
         const content = contentRef.current.value
-        if(!name) {
+        if (!userName) {
             nameRef.current.focus()
+            return false
         }
-        if(!content) {
+        if (!content) {
             contentRef.current.focus()
-        }else{
-            /* TODO : call api*/
+            return false
+
+        }
+        if (userName && content) {
+            if (isReply && parentId) {
+                createCommentFunc({
+                    username: userName,
+                    content: content,
+                    image_id: parentId,
+                    createdAt: Date.now(),
+                    send : 'replyComment'
+                })
+            } else {
+                createCommentFunc({username: userName, content: content, image_id: imageId, createdAt: Date.now()})
+            }
         }
     }
+
     return (
-        <form>
+        <>
             {
-                !showForm ?
-                    <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE} onClick={() => toggleShowForm(true)}>Add
-                        Comment</IconButtonStyled>
+                (!showForm && !isReply) ?
+                    <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE} onClick={() => toggleShowForm(true)}>
+                        Add Comment</IconButtonStyled>
                     :
                     <FormWrapper flexDirection='column'>
                         <FlexStyled alignItems='center'>
-                            <label htmlFor='author'>Name</label>
-                            <input type="text" name="author" ref={nameRef}/>
+                            <label htmlFor='userName'>Name</label>
+                            <input type="text" name="userName" ref={nameRef}/>
                         </FlexStyled>
                         <FlexStyled alignItems='center'>
                             <label htmlFor='content'>Content</label>
                             <textarea name="content" id="content" cols="30" rows="5" ref={contentRef}/>
                         </FlexStyled>
+
                         <FlexStyled justifyContent='center'>
-                            <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE} type='submit' onClick={handleSubmit}>Send</IconButtonStyled>
+                            <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE} type='submit'
+                                              onClick={() => handleSubmit()}>Send</IconButtonStyled>
                             <IconButtonStyled bgColor={PALLET.GRAY}
-                                              onClick={() => toggleShowForm(false)}>Cancel</IconButtonStyled>
+                                              onClick={() => {
+                                                  toggleShowForm(false)
+                                                  if (setShowFormReply) {
+                                                      setShowFormReply(false)
+                                                  }
+                                              }}>Cancel</IconButtonStyled>
                         </FlexStyled>
                     </FormWrapper>
             }
-        </form>
+        </>
 
 
     );

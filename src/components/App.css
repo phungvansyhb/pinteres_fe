@@ -20,7 +20,12 @@ body {
     border-radius: 10px;
     outline: none;
 }
-
+.mt-2{
+    margin-top: 8px;
+}
+.mt-1{
+    margin-top: 4px;
+}
 .mr-1 {
     margin-right: 4px;
 }
@@ -75,6 +80,29 @@ body {
 }
 .p-4{
     padding : 16px
+}
+.border{
+    border: .5px solid lightgray;
+}
+.rounded{
+    border-radius: 8px;
+}
+.w-full{
+    width: 100%;
+}
+.w-max{
+    width: max-content;
+}
+.h-full{
+    height: 100%;
+}
+.h-max{
+    height: max-content;
+}
+.truncate{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .selfCenter {
     position: absolute;

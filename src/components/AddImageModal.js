@@ -4,7 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import {FlexStyled} from "../styledCss/FlexStyled";
 import {IconButtonStyled} from "../styledCss/ButtonStyled";
 import {PALLET} from "../styledCss/Theme";
-import {BoxStyled, ModalStyled} from "./Pin";
+import { ModalStyled} from "./Pin";
 import {FormWrapper} from "./AddComment";
 import styled from "styled-components";
 import ImageUploading from "react-images-uploading";
@@ -15,6 +15,7 @@ import Snackbar from "@material-ui/core/Snackbar";
 import Image from "../api/Image";
 import {useMutation} from "react-query";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import {BoxStyled} from "./K16";
 
 function AddImageModal({...props}) {
     // const titleRef = useRef();
@@ -48,6 +49,21 @@ function AddImageModal({...props}) {
 
         }
     }
+    const keyRef = useRef();
+    const errorRef = useRef();
+    const key = process.env.REACT_APP_KEY_UPLOAD
+    const [showModalCheckKey , setShowModalCheckKey] = useState(false)
+    function checkKey() {
+        if (keyRef.current.value === key) {
+            setShowModalCheckKey(false)
+            handleUploadImage()
+        }
+        else{
+            errorRef.current.innerText='Key không chính xác'
+        }
+    }
+
+
 
     return (
         <BoxExtendStyled>
@@ -59,6 +75,24 @@ function AddImageModal({...props}) {
                 message={msg}
 
             />
+            <ModalStyled open={showModalCheckKey} onClose ={()=>setShowModalCheckKey(false)}>
+                <Fade in={showModalCheckKey}>
+                    <BoxStyled>
+                        <FormWrapper>
+                            <FlexStyled alignItems='center'>
+                                <label htmlFor='keyK16'>Key</label>
+                                <input type="text" name="keyK16" ref={keyRef}/>
+                            </FlexStyled>
+                            <p ref={errorRef} style={{color:"red" , fontWeight:600 , textAlign:'center'}}></p>
+
+                            <FlexStyled justifyContent='center'>
+                                <IconButtonStyled bgColor={PALLET.BLACK} color={PALLET.WHITE} type='submit'
+                                                  onClick={() => checkKey()}>Check</IconButtonStyled>
+                            </FlexStyled>
+                        </FormWrapper>
+                    </BoxStyled>
+                </Fade>
+            </ModalStyled>
 
             <Grid container spacing={2} className='formCreate'>
                 <Grid item xs={12} style={{padding: '20px'}}>
@@ -110,7 +144,11 @@ function AddImageModal({...props}) {
                     <FlexStyled gap={'4px'} justifyContent={'center'}>
                         <IconButtonStyled bgColor={PALLET.RED}
                                           color={PALLET.WHITE}
-                                          onClick={handleUploadImage}>{uploadImageMutation.isLoading ?
+                                          onClick={()=>{
+                                              if(image){
+                                                  setShowModalCheckKey(true)
+                                              }
+                                          }}>{uploadImageMutation.isLoading ?
                             <CircularProgress /> : 'Save'} </IconButtonStyled>
                         <IconButtonStyled bgColor={PALLET.GRAY}>Cancel</IconButtonStyled>
                     </FlexStyled>

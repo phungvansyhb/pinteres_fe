@@ -41,7 +41,7 @@ const Home = React.forwardRef(({...props}, ref) => {
             </FlexExtend>
 
             {isFetching ? <CircularProgress color="primary" className='selfCenter'/> :
-                <Mainboard pins={data.data.images}/>
+                <Mainboard pins={data?.data?.images}/>
             }
         </>
     );

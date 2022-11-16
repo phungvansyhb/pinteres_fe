@@ -17,6 +17,7 @@ export const IconButtonStyled = styled.button`
   outline: none;
   border: none;
   display: flex;
+  font-size:${props=>props.fontSize||'16px'};
   padding: ${props => props.padding ||'16px'};
   align-items: center;
   justify-content: center;
