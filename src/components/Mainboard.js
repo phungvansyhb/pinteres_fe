@@ -3,7 +3,6 @@ import Pin from "./Pin";
 import "./Mainboard.css";
 
 function Mainboard({pins, ...props}) {
-
     return (
         <div className="mainboard">
             <div className="mainboard__container">

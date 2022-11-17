@@ -42,7 +42,7 @@ function AddComment({setShowFormReply, parentId, isReply, ...props}) {
         <>
             {
                 (!showForm && !isReply) ?
-                    <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE} onClick={() => toggleShowForm(true)}>
+                    <IconButtonStyled bgColor={PALLET.GRAY} color={PALLET.BLACK} onClick={() => toggleShowForm(true)}>
                         Add Comment</IconButtonStyled>
                     :
                     <FormWrapper flexDirection='column'>
@@ -87,7 +87,7 @@ export const FormWrapper = styled.div`
   label {
     font-weight: 600;
     margin-right: 8px;
-    width: 50px;
+    max-width: 80px;
   }
 
   input {

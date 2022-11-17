@@ -11,9 +11,9 @@ function CategoryItem({category, activeKey, toggleCategory, ...props}) {
         return false
     }, [activeKey, category])
     return (
-        <CategoryItemStyled bgColor={isActive ? PALLET.RED : '#fff'}
+        <CategoryItemStyled bgColor={isActive ? '#FECA6E' : '#fff'}
                             color={isActive ? PALLET.WHITE : PALLET.BLACK}
-                            onClick={() => toggleCategory(category)}>{category}</CategoryItemStyled>
+                            onClick={() => toggleCategory(category)} className='capitalize'>{category}</CategoryItemStyled>
     );
 }
 

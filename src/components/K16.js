@@ -1,5 +1,5 @@
-import React, {useCallback, useRef, useState} from 'react';
-import {useQuery} from "react-query";
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useInfiniteQuery, useQuery} from "react-query";
 import Image from "../api/Image";
 import Mainboard from "./Mainboard";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -7,7 +7,7 @@ import styled from "styled-components";
 import CategoryItem, {CategoryItemStyled} from "./CategoryItem";
 import {FlexExtend} from "./Home";
 import {PALLET} from "../styledCss/Theme";
-import {ModalStyled} from "./Pin";
+import Pin, {ModalStyled} from "./Pin";
 import Modal from "@material-ui/core/Modal";
 import {FormWrapper} from "./AddComment";
 import {FlexStyled} from "../styledCss/FlexStyled";
@@ -19,7 +19,8 @@ import Box from "@material-ui/core/Box";
 const K16Category = [
     {label: 'pretty', value: 'pretty'},
     {label: 'oversensitive', value: 'oversensitive'},
-    {label: 'ripe', value: 'ripe'}
+    {label: 'ripe', value: 'ripe'},
+    {label: 'wedding', value: 'wedding'}
 ]
 const K16Member = [
     {label: "  Bùi An", value: "bui - an"},
@@ -74,19 +75,33 @@ function K16({...props}) {
     });
     const [nameMember, setNameMember] = useState();
     const [activeCategory, setActiveCategory] = useState();
+
+
     const {
         data,
+        hasNextPage,
+        hasPreviousPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isFetching
-    } = useQuery(['getK16Only', activeCategory, nameMember], () => {
+    } = useInfiniteQuery(['getK16Only', activeCategory, nameMember], async({pageParam}) => {
+        let result = {}
         if (!activeCategory && !nameMember) {
-            return Image.getK16Only()
+            result = await Image.getK16Only(pageParam)
         }
-        if (activeCategory) {
-            return Image.searchByCategory(activeCategory)
+        else if (activeCategory) {
+            result = await Image.searchByCategory(activeCategory , pageParam)
         } else {
-            return Image.searchByName(nameMember)
+            result = await Image.searchByName(nameMember , pageParam)
         }
-    }, {initialData: []})
+        return [...result.data?.images]
+    }, {getNextPageParam: (lastPage, allPages) => {
+            const nextPage = allPages.length + 1
+            return nextPage
+        }})
+
+
+
     const toggleState = useCallback((value, type) => {
         if (type === TYPE_FILTER.CATEGORY) {
             if (activeCategory !== value) {
@@ -115,18 +130,32 @@ function K16({...props}) {
             errorRef.current.innerText='Key không chính xác'
         }
     }
-
+    useEffect(() => {
+        let fetching = false;
+        const handleScroll = async (e) => {
+            const {scrollHeight, scrollTop, clientHeight} = e.target.scrollingElement;
+            console.log(scrollHeight - scrollTop - clientHeight)
+            if (!fetching && scrollHeight - scrollTop - clientHeight <= 100) {
+                fetching = true
+                if (hasNextPage) await fetchNextPage()
+                fetching = false
+            }
+        }
+        document.addEventListener('scroll', handleScroll)
+        return () => {
+            document.removeEventListener('scroll', handleScroll)
+        }
+    }, [fetchNextPage, hasNextPage])
     if (!validateKey) return (
         <ModalStyled open={true} >
             <Fade in={true}>
                 <BoxStyled>
-                    <FormWrapper>
-                        <FlexStyled alignItems='center'>
+                    <FormWrapper style={{gap:'16px'}}>
+                        <FlexStyled alignItems='center' >
                             <label htmlFor='keyK16'>Key</label>
                             <input type="text" name="keyK16" ref={keyRef}/>
                         </FlexStyled>
                         <p ref={errorRef} style={{color:"red" , fontWeight:600 , textAlign:'center'}}></p>
-
                         <FlexStyled justifyContent='center'>
                             <IconButtonStyled bgColor={PALLET.BLACK} color={PALLET.WHITE} type='submit'
                                               onClick={() => checkKey()}>Check</IconButtonStyled>
@@ -142,7 +171,7 @@ function K16({...props}) {
                 {K16Category.map((item, index) => <CategoryItem category={item.label} activeKey={activeCategory}
                                                                 toggleCategory={(value) => toggleState(value, TYPE_FILTER.CATEGORY)}
                                                                 key={index}/>)}
-                <CategoryItemStyled bgColor={nameMember ? PALLET.BLUE : '#fff'}
+              {/*  <CategoryItemStyled bgColor={nameMember ? PALLET.BLUE : '#fff'}
                                     color={nameMember ? PALLET.WHITE : PALLET.BLACK}
                                     className='memberBtn'
                 >
@@ -153,11 +182,22 @@ function K16({...props}) {
                                                                       toggleCategory={(value) => toggleState(value, TYPE_FILTER.MEMBER)}
                                                                       key={index}/>)}
                     </div>
-                </CategoryItemStyled>
+                </CategoryItemStyled>*/}
 
             </FlexExtend>
             {isFetching ? <CircularProgress color="primary" className='selfCenter'/> :
-                <Mainboard pins={data.data.images}/>
+                <div className='mainboard'>
+                    <div className="mainboard__container">
+                        {
+                            data?.pages.map((group, i) => group.sort(function (a, b) {
+                                return 0.5 - Math.random();
+                            }).map((pin, index) => {
+                                let {srcImage} = pin;
+                                return <Pin urls={srcImage} {...pin} key={index}/>;
+                            }))
+                        }
+                    </div>
+                </div>
             }
         </K16Wrapper>
 

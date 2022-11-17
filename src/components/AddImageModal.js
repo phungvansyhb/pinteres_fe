@@ -78,7 +78,7 @@ function AddImageModal({...props}) {
             <ModalStyled open={showModalCheckKey} onClose ={()=>setShowModalCheckKey(false)}>
                 <Fade in={showModalCheckKey}>
                     <BoxStyled>
-                        <FormWrapper>
+                        <FormWrapper style={{gap:'16px'}}>
                             <FlexStyled alignItems='center'>
                                 <label htmlFor='keyK16'>Key</label>
                                 <input type="text" name="keyK16" ref={keyRef}/>

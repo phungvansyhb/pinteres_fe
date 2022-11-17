@@ -110,6 +110,12 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+.capitalize{
+    text-transform: capitalize;
+}
 .msgError{
     background-color: indianred;
+}
+.text-center{
+    text-align: center;
 }

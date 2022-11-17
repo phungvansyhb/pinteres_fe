@@ -9,6 +9,7 @@ import Forum from "@material-ui/icons/Forum";
 import FileSaver from 'file-saver'
 import {CloudDownload} from "@material-ui/icons";
 import {useNavigate} from "react-router-dom";
+import LazyLoad from 'react-lazyload'
 
 function Pin({srcImage, title, description, createdAt, updatedAt, _id, amountComment, ...props}) {
     const navigate = useNavigate()
@@ -23,6 +24,7 @@ function Pin({srcImage, title, description, createdAt, updatedAt, _id, amountCom
         <>
             <div className="pin">
                 <div className="pin__container" onClick={() => navigate(`/image/${_id}`)}>
+
                     <img src={srcImage} alt="pin"/>
                     <div className='pin__itemOverlay'>
                         <IconButtonStyled padding={'8px'} bgColor={PALLET.RED} color={PALLET.WHITE}
@@ -34,6 +36,7 @@ function Pin({srcImage, title, description, createdAt, updatedAt, _id, amountCom
                             {amountComment} <Forum/>
                         </div>
                     </div>
+
                 </div>
             </div>
 

@@ -26,19 +26,19 @@ class Image {
 
     }
 
-    getAllExcludeK16() {
-        return Base.get('/')
+    getAllExcludeK16(page , limit) {
+        return Base.get('/' , {params : {page : page , limit : 20}})
     }
-    getK16Only() {
-        return Base.get('/k16')
-    }
-
-    searchByName(name) {
-        return Base.get('/images/by-name', {params: {name: name}})
+    getK16Only(page , limit) {
+        return Base.get('/k16' , {params : {page : page , limit : 20}})
     }
 
-    searchByCategory(category) {
-        return Base.get('/images', {params: {category: category}})
+    searchByName(name , page) {
+        return Base.get('/images/by-name', {params: {name: name , page : page , limit : 20}})
+    }
+
+    searchByCategory(category , page) {
+        return Base.get('/images', {params: {category: category , page : page ,limit : 20}})
     }
 }
 

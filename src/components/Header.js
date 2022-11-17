@@ -36,8 +36,8 @@ function Header({onSubmit, ...props}) {
                 </SearchBarWrapper>
             </SearchWrapper>
             <div className='flex gap-2'>
-                <IconButtonStyledExtend bgColor={PALLET.BLACK} color={PALLET.WHITE} onClick={()=>navigate("/k16")}>K16</IconButtonStyledExtend>
-                <IconButtonStyledExtend style={{backgroundColor: PALLET.RED, color: PALLET.WHITE}} onClick={()=>navigate("/create")}>
+                <IconButtonStyledExtend bgColor={'#FECA6E'} color={PALLET.BLACK} onClick={()=>navigate("/k16")}>K16</IconButtonStyledExtend>
+                <IconButtonStyledExtend style={{backgroundColor: PALLET.GRAY, color: PALLET.BLACK}} onClick={()=>navigate("/create")}>
                     <AddIcon/>
                 </IconButtonStyledExtend>
             </div>

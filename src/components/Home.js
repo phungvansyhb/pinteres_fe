@@ -1,25 +1,41 @@
-import React, {useCallback, useEffect, useImperativeHandle, useState} from 'react';
+import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {FlexStyled} from "../styledCss/FlexStyled";
 import CategoryItem from "./CategoryItem";
 import Mainboard from "./Mainboard";
 import styled from "styled-components";
 import Image from '../api/Image'
-import {useQuery} from "react-query";
+import {useQuery, useInfiniteQuery} from "react-query";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import {IconButtonStyled} from "../styledCss/ButtonStyled";
+import {PALLET} from "../styledCss/Theme";
+import Pin from "./Pin";
 
-const category = ["ocean", "Tokyo", "dogs", "cats", 'ball']
+const category = ["boy", "girl", "sexy", "wendy", "cute", "anime", "gamming", "meme", "food", "natura", "west-lake", "ho-tan-xa", "afternoon-sky", "flower" ,"dog","motivation"]
 
 const Home = React.forwardRef(({...props}, ref) => {
     const [activeCategory, setActiveCategory] = useState()
     const {
         data,
+        hasNextPage,
+        hasPreviousPage,
+        isFetchingNextPage,
+        fetchNextPage,
         isFetching
-    } = useQuery(['getAllExcludeK16', activeCategory], () => {
+    } = useInfiniteQuery(['getAllExcludeK16', activeCategory], async ({pageParam}) => {
+        let result = {}
         if (!activeCategory) {
-            return Image.getAllExcludeK16()
+            result = await Image.getAllExcludeK16(pageParam)
+        } else {
+            result = await Image.searchByCategory(activeCategory, pageParam)
         }
-        return Image.searchByCategory(activeCategory)
-    }, {initialData: []})
+        return [...result.data?.images]
+    }, {
+        getNextPageParam: (lastPage, allPages) => {
+            const nextPage = allPages.length + 1
+            return nextPage
+        }
+
+    })
 
     const toggleMenuCategory = useCallback((category) => {
         if (activeCategory !== category) {
@@ -30,8 +46,23 @@ const Home = React.forwardRef(({...props}, ref) => {
         return {
             onSearchSubmit: (category) => setActiveCategory(category)
         }
-    },[{}])
-
+    }, [{}])
+    useEffect(() => {
+        let fetching = false;
+        const handleScroll = async (e) => {
+            const {scrollHeight, scrollTop, clientHeight} = e.target.scrollingElement;
+            console.log(scrollHeight - scrollTop - clientHeight)
+            if (!fetching && scrollHeight - scrollTop - clientHeight <= 100) {
+                fetching = true
+                if (hasNextPage) await fetchNextPage()
+                fetching = false
+            }
+        }
+        document.addEventListener('scroll', handleScroll)
+        return () => {
+            document.removeEventListener('scroll', handleScroll)
+        }
+    }, [fetchNextPage, hasNextPage])
     return (
         <>
 
@@ -39,10 +70,20 @@ const Home = React.forwardRef(({...props}, ref) => {
                 {category.map((item, index) => <CategoryItem category={item} activeKey={activeCategory}
                                                              toggleCategory={toggleMenuCategory} key={index}/>)}
             </FlexExtend>
+            <div className='mainboard'>
+                <div className="mainboard__container">
+                    {
+                        data?.pages.map((group, i) => group.sort(function (a, b) {
+                            return 0.5 - Math.random();
+                        }).map((pin, index) => {
+                            let {srcImage} = pin;
+                            return <Pin urls={srcImage} {...pin} key={index}/>;
+                        }))
+                    }
+                </div>
+            </div>
 
-            {isFetching ? <CircularProgress color="primary" className='selfCenter'/> :
-                <Mainboard pins={data?.data?.images}/>
-            }
+
         </>
     );
 })

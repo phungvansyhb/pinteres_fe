@@ -162,7 +162,7 @@ function ImageDetail({...props}) {
                                     {/*====================Action==================================*/}
                                     <FlexStyled justifyContent='space-between' alignItems='center'>
                                         <FlexStyled gap={'4px'}>
-                                            <IconButtonStyled bgColor={PALLET.RED} color={PALLET.WHITE}
+                                            <IconButtonStyled bgColor={PALLET.GRAY} color={PALLET.BLACK}
                                                               onClick={handleDownload}>Download</IconButtonStyled>
                                             <IconButtonStyled bgColor={PALLET.GRAY}
                                                               onClick={() => toggleEdit(true)}>Edit</IconButtonStyled>
@@ -224,7 +224,7 @@ function ImageDetail({...props}) {
                                         <input type="text" name="title" ref={titleInputEditRef}/>
                                     </FlexStyled>
                                     <FlexStyled alignItems='center'>
-                                        <label htmlFor='description'>Content</label>
+                                        <label htmlFor='description'>Description</label>
                                         <textarea name="description" id="description" cols="30" rows="5" ref={descriptionInputEditRef}/>
                                     </FlexStyled>
                                     <FlexStyled gap={'4px'} justifyContent={'center'}>
