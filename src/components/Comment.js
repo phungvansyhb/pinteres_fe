@@ -18,7 +18,7 @@ const RenderComment = ({localComment, isChild}) => {
     const [isShowFormReply, setShowFormReply] = useState(false)
     return (
         <>
-            <FlexStyled gap={'4px'} alignItems={'start'}>
+            <FlexStyled gap={'4px'} alignItems={'center'}>
                 <TextStyled fontWeight={700} className={'mr-1 w-max truncate'} style={{width : '70px'}}>{localComment.username || 'anonymous'}</TextStyled>
                 <TextStyled fontWeight={400} fontSize='12px' className='ml-4'><p
                     dangerouslySetInnerHTML={{__html: localComment.content}}/></TextStyled>

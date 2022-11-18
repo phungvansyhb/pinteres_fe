@@ -18,7 +18,6 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Mainboard from "./Mainboard";
 import socketIO from 'socket.io-client'
 
-const socket = socketIO(process.env.REACT_APP_BASE_URL);
 const SOCKET_EVENT = {
     CONNECT: 'connect',
     JOIN_ROOM: 'joinRoom',
@@ -29,7 +28,6 @@ const SOCKET_EVENT = {
     EDIT_HEADER: 'editHeader',
     SEND_EDIT_HEADER_TO_CLIENT: 'sendEditHeaderToClient',
     DISCONNECT: 'disconnect'
-
 }
 
 export const ImageContext = createContext({
@@ -40,25 +38,40 @@ export const ImageContext = createContext({
     }
 })
 
+const socket = socketIO(process.env.REACT_APP_BASE_URL);
 
 function ImageDetail({...props}) {
     const {id} = useParams()
-    const {data: {detail, references}, isFetching , refetch : refetchImage} = useQuery(['getImageDetail', id], async () => {
+    const [imageDetail, setImageDetail] = useState(null)
+    const [commentList, setCommentList] = useState(null)
+    const {
+        data: {detail, references},
+        isFetching,
+        refetch: refetchImage
+    } = useQuery(['getImageDetail', id], async () => {
             const result = await ImageModel.getDetail(id)
             const [detail, ...references] = result.data.images
             return {detail, references}
         },
         {
             initialData: {},
-            enabled: !!id
+            enabled: !!id,
+            onSuccess: (data) => {
+                setImageDetail(data.detail)
+            }
         }
     )
-    const {data: comments, isFetching: fetchingComment , refetch : refetchComment} = useQuery(['getComment', id], async () => {
+    const {
+        data: comments,
+        isFetching: fetchingComment,
+        refetch: refetchComment
+    } = useQuery(['getComment', id], async () => {
         const result = await CommentModel.getCommentByImageId(id)
         return result.data.comments
     }, {
         initialData: [],
-        enabled: !!id
+        enabled: !!id,
+        onSuccess: (value) => setCommentList(value)
     })
     const [showCommentList, toggleShowComment] = useState(false);
     const [isEdit, toggleEdit] = useState(false);
@@ -70,8 +83,8 @@ function ImageDetail({...props}) {
             FileSaver.saveAs(detail.srcImage, "image")
         }
     }, [])
-    const [isConnected, setIsConnected] = useState(socket.connected);
 
+    const [isConnected, setIsConnected] = useState(socket.connected);
     useEffect(() => {
         console.log('effect run1')
         socket.on(SOCKET_EVENT.CONNECT, (e) => {
@@ -93,19 +106,25 @@ function ImageDetail({...props}) {
             socket.emit(SOCKET_EVENT.JOIN_ROOM, id);
             socket.on(SOCKET_EVENT.SEND_COMMENT_TO_CLIENT, (newComment) => {
                 // setCommentSt([newComment,...commentsSt ])
-                refetchComment()
+                // refetchComment()
+                setCommentList([newComment, ...commentList])
                 console.log('nhan duoc comment khac tu server', newComment)
             })
 
             socket.on(SOCKET_EVENT.SEND_REPLY_TO_CLIENT, (newComment) => {
-                refetchComment()
+                // refetchComment()
                 // setCommentSt([newComment,...commentsSt])
+                setCommentList((commentList) => commentList.map(oldComment => {
+                    if (oldComment._id === newComment._id) return newComment
+                    else return oldComment
+                }))
                 console.log('nhan duoc comment reply khac tu server', newComment)
             })
-            socket.on(SOCKET_EVENT.SEND_EDIT_HEADER_TO_CLIENT, (newHeader) => {
-                refetchImage()
+            socket.on(SOCKET_EVENT.SEND_EDIT_HEADER_TO_CLIENT, (updatedImage) => {
+                // refetchImage()
+                setImageDetail(updatedImage)
                 toggleEdit(false)
-                console.log('nhan duoc header moi tu server', newHeader)
+                console.log('nhan duoc header moi tu server', updatedImage)
 
             })
         }
@@ -115,7 +134,7 @@ function ImageDetail({...props}) {
             socket.off(SOCKET_EVENT.SEND_REPLY_TO_CLIENT);
             socket.off(SOCKET_EVENT.SEND_EDIT_HEADER_TO_CLIENT);
         }
-    }, [socket, isConnected , id])
+    }, [socket, isConnected, id])
 
     function createComment(comment) {
         socket.emit(SOCKET_EVENT.CREATE_COMMENT, comment)
@@ -124,7 +143,7 @@ function ImageDetail({...props}) {
     const titleInputEditRef = useRef()
     const descriptionInputEditRef = useRef()
 
-    function editHeader(headerContent) {
+    function editHeader() {
         const title = titleInputEditRef.current.value;
         const description = descriptionInputEditRef.current.value
         if (!title) {
@@ -136,12 +155,12 @@ function ImageDetail({...props}) {
             return false
 
         }
-        socket.emit(SOCKET_EVENT.EDIT_HEADER, { title , description , id : id})
+        socket.emit(SOCKET_EVENT.EDIT_HEADER, {title, description, id: id})
     }
 
 
     if (isFetching || fetchingComment) return <CircularProgress className='selfCenter'/>
-    if (!detail) return <h1> ID invalid </h1>
+    if (!imageDetail) return <h1> ID invalid </h1>
     return (
         <ImageContext.Provider value={
             {
@@ -153,7 +172,7 @@ function ImageDetail({...props}) {
             <BoxStyled>
                 <Grid container spacing={2} className='imageWrap'>
                     <Grid item xs={12} md={6} style={{padding: '20px'}}>
-                        <img src={detail?.srcImage} alt="pin"/>
+                        <img src={imageDetail?.srcImage} alt="pin"/>
                     </Grid>
                     <Grid item xs={12} md={6} style={{padding: '20px'}}>
                         {
@@ -170,13 +189,13 @@ function ImageDetail({...props}) {
 
 
                                         <TextStyled fontSize={'12px'} fontWeight={400}
-                                                    color='gray'>{new Date(detail?.updatedAt).toLocaleString()}</TextStyled>
+                                                    color='gray'>{new Date(imageDetail?.updatedAt).toLocaleString()}</TextStyled>
                                     </FlexStyled>
                                     <br/>
                                     {/*===================Description===============================*/}
                                     {
-                                        detail.title ? <TextStyled fontSize={'36px'}
-                                                                   fontWeight={700}>{detail.title}</TextStyled>
+                                        imageDetail.title ? <TextStyled fontSize={'36px'}
+                                                                        fontWeight={700}>{imageDetail.title}</TextStyled>
                                             : <TextStyled fontSize={'36px'}
                                                           fontWeight={700}
                                                           color={PALLET.GRAY}>{'Not have name yet'}</TextStyled>
@@ -184,8 +203,8 @@ function ImageDetail({...props}) {
                                     }
                                     <br/>
                                     {
-                                        detail.description ? <TextStyled fontSize={'16px'}
-                                                                         fontWeight={400}>{detail.description}</TextStyled>
+                                        imageDetail.description ? <TextStyled fontSize={'16px'}
+                                                                              fontWeight={400}>{imageDetail.description}</TextStyled>
                                             : <TextStyled fontSize={'16px'}
                                                           fontWeight={400}
                                                           color={PALLET.GRAY}>Not have description yet</TextStyled>
@@ -196,7 +215,7 @@ function ImageDetail({...props}) {
                                     <br/>
                                     <FlexStyled gap={'8px'} alignItems={'center'}>
                                         <TextStyled fontWeight={600}
-                                                    fontSize={'20px'}>{comments.length} Comments</TextStyled>
+                                                    fontSize={'20px'}>{commentList.length} Comments</TextStyled>
                                         <BtnArrowIconStyled bgColor={'#fff'}
                                                             onClick={() => toggleShowComment(!showCommentList)}>
                                             <ArrowDownward
@@ -208,32 +227,36 @@ function ImageDetail({...props}) {
                                     </FlexStyled>
                                     <br/>
                                     {showCommentList &&
-                                        <CommentBlockWrapper flexDirection={'column'} gap={'20px'}>
-                                            {comments.map((comment, index) => <Comment comment={comment}
-                                                                                       key={index}/>)}
-                                        </CommentBlockWrapper>
+                                    <CommentBlockWrapper flexDirection={'column'} gap={'20px'}>
+                                        {commentList.map((comment, index) => <Comment comment={comment}
+                                                                                      key={index}/>)}
+                                    </CommentBlockWrapper>
                                     }
                                     <br/>
                                     <br/>
                                     <AddComment/>
                                 </>
                                 : <>
-                                <FormWrapper flexDirection='column'>
-                                    <FlexStyled alignItems='center'>
-                                        <label htmlFor='title'>Title</label>
-                                        <input type="text" name="title" ref={titleInputEditRef}/>
-                                    </FlexStyled>
-                                    <FlexStyled alignItems='center'>
-                                        <label htmlFor='description'>Description</label>
-                                        <textarea name="description" id="description" cols="30" rows="5" ref={descriptionInputEditRef}/>
-                                    </FlexStyled>
-                                    <FlexStyled gap={'4px'} justifyContent={'center'}>
-                                        <IconButtonStyled bgColor={PALLET.RED}
-                                                          color={PALLET.WHITE} onClick={()=>editHeader()}>Save</IconButtonStyled>
-                                        <IconButtonStyled bgColor={PALLET.GRAY}
-                                                          onClick={() => toggleEdit(false)}>Cancel</IconButtonStyled>
-                                    </FlexStyled>
-                                </FormWrapper>
+                                    {/*==================Edit Header============================*/}
+                                    <FormWrapper flexDirection='column'>
+                                        <FlexStyled alignItems='center'>
+                                            <label htmlFor='title'>Title</label>
+                                            <input type="text" name="title" ref={titleInputEditRef}
+                                                   defaultValue={imageDetail.title}/>
+                                        </FlexStyled>
+                                        <FlexStyled alignItems='center'>
+                                            <label htmlFor='description'>Description</label>
+                                            <textarea name="description" id="description" cols="30" rows="5"
+                                                      ref={descriptionInputEditRef} defaultValue={imageDetail.description}/>
+                                        </FlexStyled>
+                                        <FlexStyled gap={'4px'} justifyContent={'center'}>
+                                            <IconButtonStyled bgColor={PALLET.RED}
+                                                              color={PALLET.WHITE}
+                                                              onClick={() => editHeader()}>Save</IconButtonStyled>
+                                            <IconButtonStyled bgColor={PALLET.GRAY}
+                                                              onClick={() => toggleEdit(false)}>Cancel</IconButtonStyled>
+                                        </FlexStyled>
+                                    </FormWrapper>
                                 </>
                         }
                     </Grid>
@@ -252,7 +275,8 @@ export default ImageDetail;
 
 const CommentBlockWrapper = styled(FlexStyled)`
   box-sizing: border-box;
-  height: 500px;
+  height: max-content;
+  max-height: 500px;
   //overflow: hidden;
   overflow-y: scroll;
 `

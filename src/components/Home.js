@@ -51,7 +51,6 @@ const Home = React.forwardRef(({...props}, ref) => {
         let fetching = false;
         const handleScroll = async (e) => {
             const {scrollHeight, scrollTop, clientHeight} = e.target.scrollingElement;
-            console.log(scrollHeight - scrollTop - clientHeight)
             if (!fetching && scrollHeight - scrollTop - clientHeight <= 100) {
                 fetching = true
                 if (hasNextPage) await fetchNextPage()
@@ -66,10 +65,10 @@ const Home = React.forwardRef(({...props}, ref) => {
     return (
         <>
 
-            <FlexExtend gap={'24px'} justifyContent={'center'}>
+            <CategoryWrapper>
                 {category.map((item, index) => <CategoryItem category={item} activeKey={activeCategory}
                                                              toggleCategory={toggleMenuCategory} key={index}/>)}
-            </FlexExtend>
+            </CategoryWrapper>
             <div className='mainboard'>
                 <div className="mainboard__container">
                     {
@@ -87,7 +86,12 @@ const Home = React.forwardRef(({...props}, ref) => {
         </>
     );
 })
+const CategoryWrapper = styled.div`
+  display: flex;
+  overflow: scroll;
+  white-space: nowrap;
 
+`
 export const FlexExtend = styled(FlexStyled)`
   overflow: auto;
   gap: 6px;
