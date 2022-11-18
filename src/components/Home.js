@@ -88,7 +88,8 @@ const Home = React.forwardRef(({...props}, ref) => {
 })
 const CategoryWrapper = styled.div`
   display: flex;
-  overflow: scroll;
+  justify-content: center;
+  overflow-x: auto;
   white-space: nowrap;
 
 `
